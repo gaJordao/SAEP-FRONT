@@ -1,65 +1,96 @@
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 function GerenciarTarefas() {
+  const [tarefas, setTarefas] = useState([]);
+
+  useEffect(() => {
+    const fetchTarefas = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/v1/tasks/");
+        setTarefas(response.data);
+      } catch (err) {
+        console.error("Erro ao buscar tarefas:", err.message);
+      }
+    };
+
+    fetchTarefas();
+  }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/v1/tasks/${id}`);
+      setTarefas((prevTarefas) => prevTarefas.filter((tarefa) => tarefa.id !== id));
+    } catch (err) {
+      console.error("Erro ao excluir tarefa:", err.message);
+    }
+  };
+
+  // Filtrando tarefas por status
+  const columns = {
+    "To Do": tarefas.filter((tarefa) => tarefa.status === "to do"),
+    Doing: tarefas.filter((tarefa) => tarefa.status === "doing"),
+    Done: tarefas.filter((tarefa) => tarefa.status === "done"),
+  };
+
   return (
-    <main>
-      <header className="flex flex-row items-center justify-around bg-slate-600 p-[.8rem]">
-        <h1 className="font-bold text-[1.5rem] text-white">Cadastrar Usuários</h1>
-        <div className="flex gap-[2.5rem]">
-          <Link className="text-white underline" to="/">Cadastrar Usuários</Link>
-          <Link className="text-white underline" to="/cadastro">Cadastrar Tarefas</Link>
-          <Link className="text-white underline" to="/tarefas">Gerenciar Tarefas</Link>
+    <main className="min-h-screen bg-gray-800 text-white">
+      <header className="flex flex-row items-center justify-between bg-blue-600 p-4 rounded-lg mb-8">
+        <h1 className="font-bold text-xl">Gerenciar Tarefas</h1>
+        <div className="flex gap-6">
+          <Link className="underline" to="/">Cadastrar Usuários</Link>
+          <Link className="underline" to="/cadastro">Cadastrar Tarefas</Link>
+          <Link className="underline" to="/tarefas">Gerenciar Tarefas</Link>
         </div>
       </header>
 
-      <div className="flex flex-wrap items-center justify-center gap-[1rem] mt-[5rem] h-auto w-[100%]">
-
-        <div className="flex flex-col items-center justify-center bg-slate-600 w-[90%] sm:w-[35rem] h-[30rem] rounded-3xl">
-          <h1 className="mb-[2rem] text-[2rem] text-white">Cadastro de Usuários</h1>
-          <div className="flex flex-col items-start ml-[3rem] w-[100%] gap-[0.5rem]">
-            <div className="flex flex-row">
-              <h3 className="text-white text-[1.5rem] mr-[1rem]">request.nomeTarefa</h3>
+      <div className="flex justify-between gap-6 p-4">
+        {Object.entries(columns).map(([status, tarefas]) => (
+          <div key={status} className="w-1/3 p-4 bg-gray-700 rounded-lg">
+            <h2 className="text-center font-bold text-lg mb-4">{status}</h2>
+            <div className="flex flex-col gap-4">
+              {tarefas.length > 0 ? (
+                tarefas.map((tarefa) => (
+                  <div
+                    key={tarefa.id}
+                    className="bg-gray-600 p-4 rounded-lg shadow-md"
+                  >
+                    <h3 className="font-bold text-lg mb-2">{tarefa.description}</h3>
+                    <p>
+                      <strong>Setor:</strong> {tarefa.department}
+                    </p>
+                    <p>
+                      <strong>Prioridade:</strong> {tarefa.priority}
+                    </p>
+                    <p>
+                      <strong>Usuário:</strong> {tarefa.user.name}
+                    </p>
+                    <p>
+                      <strong>Data de Cadastro:</strong> {tarefa.created_at}
+                    </p>
+                    <div className="flex gap-2 mt-4">
+                      <Link
+                        to={`/editar/${tarefa.id}`}
+                        className="bg-blue-500 px-4 py-2 rounded text-white text-sm"
+                      >
+                        Editar
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(tarefa.id)}
+                        className="bg-red-500 px-4 py-2 rounded text-white text-sm"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center">Nenhuma tarefa.</p>
+              )}
             </div>
-
-            <div className="flex flex-row items-center">
-              <h3 className="text-white mr-[0.6rem] text-[1.1rem] font-bold">Setor:</h3>
-              <h3 className="text-white">request.setor</h3>
-            </div>
-
-            <div className="flex flex-row items-center">
-              <h3 className="text-white mr-[0.6rem] text-[1.1rem] font-bold">Prioridade:</h3>
-              <h3 className="text-white">request.prioridade</h3>
-            </div>
-
-            <div className="flex flex-row items-center">
-              <h3 className="text-white mr-[0.6rem] text-[1.1rem] font-bold">Usuário:</h3>
-              <h3 className="text-white">request.usuario</h3>
-            </div>
-
-            <div className="flex flex-row items-center">
-              <h3 className="text-white mr-[0.6rem] text-[1.1rem] font-bold">Data de Cadastro:</h3>
-              <h3 className="text-white">request.dataCadastro</h3>
-            </div>
-
-            <button className="bg-blue-500 font-bold text-white w-[90%]">Editar</button>
-            <button className="bg-red-500 font-bold text-white w-[90%]">Excluir</button>
-
-            <div className="flex flex-row w-[100%] gap-[2rem]">
-              <div className="flex flex-row items-center w-[50%]">
-                <h3 className="text-white mr-[0.6rem] text-[1.1rem] font-bold">Status:</h3>
-                <select id="options" name="options" className="w-[90%]" required>
-                </select>
-              </div>
-
-              <button className="flex items-center justify-center pr-[0.6rem] bg-white w-[35%]">Alterar Status</button>
-            </div>
-
           </div>
-          {/* <button className="mt-[2rem] p-[1rem] px-[2rem] rounded-2xl bg-slate-300">Cadastrar</button> */}
-        </div>
-
-
-
+        ))}
       </div>
     </main>
   );

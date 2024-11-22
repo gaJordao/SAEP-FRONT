@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import CadastroUsuario from "./pages/cadastroUsuario";
-import CadastroTarefas from "./pages/CadastroTarefas";
+import CadastroTarefas from "./pages/cadastroTarefas";
 import GerenciarTarefas from "./pages/GerenciarTarefas";
+import EditarTarefa from "./pages/EditarTarefa";
 
 function App() {
 
@@ -13,6 +14,8 @@ function App() {
       <Route path="/cadastro" element={<CadastroTarefas />} />
 
       <Route path="/tarefas" element={<GerenciarTarefas />} />
+
+      <Route path="/editar/:id" element={<EditarTarefa />} />
     </Routes>
   </Router>
   )
